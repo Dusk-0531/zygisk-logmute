@@ -1,15 +1,34 @@
-# zygisk-logmute
-A zygisk module that keeps logd from draining battery
+# 网络优化模块
 
+一个用于优化移动网络性能的 Magisk 模块
 
-## 1.How does it work?
-By injecting nop opcode to __android_log_logd_logger
+## 功能特性
 
+- **基带满血优化**: 针对三大运营商（移动/联通/电信）的5G/4G CA组合优化
+- **QoS优化**: 网络服务质量优先级管理
+- **管理帧优化**: 降低弱信号下的管理帧开销
+- **信道时间片优化**: 优化信道调度和请求优先级
+- **TCP优化**: BBR拥塞控制算法，优化网络延迟和吞吐量
+- **CPU能效调度**: 针对网络场景的CPU调度优化
 
-## 2.How to keep my app from muting?
-```shell
-packagename="com.myapp.example"
-echo "${packagename}" >> /data/local/tmp/log_whitelist.conf
-# let companion update whitelist
-chmod 0660 /data/local/tmp/log_whitelist.conf
-```
+## 模块说明
+
+- 完整支持中国移动、中国联通、中国电信
+- 全程静默运行，自动备份原始参数
+- 支持游戏场景智能识别和优化
+
+## 安装说明
+
+1. 通过 Magisk Manager 安装此模块
+2. 重启设备
+3. 模块将自动检测运营商并应用相应优化
+
+## 日志位置
+
+优化日志保存在: `/data/local/tmp/gt5_modem_full_opt.log`
+
+## 注意事项
+
+- 需要 Magisk v20.4 或更高版本
+- 模块主要针对高通平台优化
+- 如遇到问题，可删除备份文件重新安装
