@@ -272,8 +272,10 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg  # RHEL/CentOS
 ```bash
 # 在 service.sh 中添加
 for block in /sys/block/*/queue/scheduler; do
-    if grep -q "kyber" "$block"; then
-        echo "kyber" > "$block"
+    if [ -f "$block" ] && grep -q "kyber" "$block"; then
+        echo "kyber" > "$block" 2>/dev/null && \
+            echo "成功切换 $block 到 kyber" || \
+            echo "切换 $block 失败"
     fi
 done
 ```
@@ -315,6 +317,7 @@ fio --name=randrw --ioengine=libaio --iodepth=16 --rw=randrw --rwmixread=70 \
 2018 -----> BFQ (预算公平队列)
    |
 2021+ ----> None/Kyber 成为现代设备默认
+            (NVMe/UFS 优先使用 Kyber，虚拟化使用 None)
 ```
 
 ---
@@ -331,7 +334,7 @@ fio --name=randrw --ioengine=libaio --iodepth=16 --rw=randrw --rwmixread=70 \
 | 虚拟磁盘 (Guest) | None | - | - |
 | RAM 磁盘 | None | - | - |
 
-**注**: None (Noop) 不推荐用于 SATA SSD 的生产环境，但在虚拟化 Guest OS 中可以使用。
+**注**: None (Noop) 不推荐用于 SATA SSD 的生产环境（缺乏 I/O 优化可能导致性能下降），但在虚拟化 Guest OS 中可以使用（由 Host OS 负责调度）。
 
 ---
 
