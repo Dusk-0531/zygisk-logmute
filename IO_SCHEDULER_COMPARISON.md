@@ -94,9 +94,9 @@ I/O 请求 → 简单合并相邻请求 → FIFO 队列 → 直接提交
 **适用场景 (Use Cases):**
 - 虚拟机 (Guest OS)
 - RAM 磁盘和内存设备
-- SSD 设备 (简单场景)
-- 闪存存储
-- 嵌入式系统
+- SSD 设备 (仅在虚拟化或特殊场景)
+- 闪存存储 (嵌入式系统)
+- 简单嵌入式系统
 
 **可调参数 (Tunable Parameters):**
 - 几乎无可调参数 (极简设计)
@@ -245,12 +245,14 @@ cat /sys/block/sda/queue/scheduler
 # 切换到 Kyber
 echo kyber > /sys/block/sda/queue/scheduler
 
-# 切换到 Noop/None
+# 切换到 Noop/None (在多队列设备上显示为 "none")
 echo none > /sys/block/sda/queue/scheduler
 
 # 切换到 MQ-Deadline
 echo mq-deadline > /sys/block/sda/queue/scheduler
 ```
+
+**注意**: 在现代多队列 (blk-mq) 设备上，Noop 调度器显示为 "none"。两者本质相同。
 
 ### 永久切换 (Permanent Change)
 在 `/etc/default/grub` 中添加内核参数：
@@ -322,12 +324,14 @@ fio --name=randrw --ioengine=libaio --iodepth=16 --rw=randrw --rwmixread=70 \
 | 设备类型 | 首选调度器 | 备选调度器 | 不推荐 |
 |:---|:---:|:---:|:---:|
 | NVMe SSD | Kyber | MQ-Deadline | Deadline |
-| SATA SSD | MQ-Deadline | Kyber | Noop |
-| 机械硬盘 | Deadline | MQ-Deadline | Noop |
+| SATA SSD | MQ-Deadline | Kyber | None* |
+| 机械硬盘 | Deadline | MQ-Deadline | None |
 | eMMC | Kyber | MQ-Deadline | - |
-| UFS 3.x | Kyber | None | Deadline |
+| UFS 3.x | Kyber | MQ-Deadline | Deadline |
 | 虚拟磁盘 (Guest) | None | - | - |
 | RAM 磁盘 | None | - | - |
+
+**注**: None (Noop) 不推荐用于 SATA SSD 的生产环境，但在虚拟化 Guest OS 中可以使用。
 
 ---
 
