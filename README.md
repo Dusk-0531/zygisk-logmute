@@ -42,6 +42,10 @@ This is a Magisk module designed for mobile data optimization, providing full ba
 
 模块运行日志保存在: `/data/local/tmp/gt5_modem_full_opt.log`
 
+## 技术文档 (Technical Documentation)
+
+- **[I/O 调度器对比](IO_SCHEDULER_COMPARISON.md)**: 详细对比 Kyber、Noop、MQ-Deadline 和 Deadline 调度器的特性、性能和使用场景
+
 ## 注意事项 (Notes)
 
 - 本模块专为移动网络优化设计
