@@ -1,0 +1,142 @@
+name: CI - Validate Module
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate module.prop
+        run: |
+          echo "Validating module.prop..."
+
+          # Check if module.prop exists
+          if [ ! -f "module.prop" ]; then
+            echo "Error: module.prop not found!"
+            exit 1
+          fi
+
+          # Check required fields
+          required_fields=("id" "name" "version" "versionCode" "author" "description")
+          for field in "${required_fields[@]}"; do
+            if ! grep -q "^${field}=" module.prop; then
+              echo "Error: Required field '${field}' not found in module.prop"
+              exit 1
+            fi
+          done
+
+          echo "✓ module.prop is valid"
+          cat module.prop
+
+      - name: Validate META-INF structure
+        run: |
+          echo "Validating META-INF structure..."
+
+          # Check if META-INF exists
+          if [ ! -d "META-INF/com/google/android" ]; then
+            echo "Error: META-INF/com/google/android directory not found!"
+            exit 1
+          fi
+
+          # Check for required files
+          if [ ! -f "META-INF/com/google/android/update-binary" ]; then
+            echo "Error: update-binary not found!"
+            exit 1
+          fi
+
+          if [ ! -f "META-INF/com/google/android/updater-script" ]; then
+            echo "Error: updater-script not found!"
+            exit 1
+          fi
+
+          echo "✓ META-INF structure is valid"
+
+      - name: Validate shell scripts
+        run: |
+          echo "Validating shell scripts..."
+
+          # Find all .sh files
+          shfiles=$(find . -name "*.sh" -not -path "./.git/*")
+
+          if [ -z "$shfiles" ]; then
+            echo "No shell scripts found to validate"
+            exit 0
+          fi
+
+          # Check syntax for each shell script
+          for script in $shfiles; do
+            echo "Checking $script..."
+            if bash -n "$script"; then
+              echo "✓ $script syntax is valid"
+            else
+              echo "✗ $script has syntax errors"
+              exit 1
+            fi
+          done
+
+      - name: Check file permissions
+        run: |
+          echo "Checking file permissions..."
+
+          # service.sh should be executable or will be made executable
+          if [ -f "service.sh" ]; then
+            echo "✓ service.sh found"
+          fi
+
+          # List all scripts
+          echo "Shell scripts in module:"
+          find . -name "*.sh" -not -path "./.git/*" -type f
+
+      - name: Test module packaging
+        run: |
+          echo "Testing module packaging..."
+
+          MODULE_ID=$(grep '^id=' module.prop | cut -d'=' -f2)
+          VERSION=$(grep '^version=' module.prop | cut -d'=' -f2)
+          TEST_ZIP="${MODULE_ID}-${VERSION}-test.zip"
+
+          # Create test zip
+          zip -r "${TEST_ZIP}" . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x "*.md" \
+            -x ".gitignore"
+
+          # Verify zip was created
+          if [ -f "${TEST_ZIP}" ]; then
+            echo "✓ Module packaging successful"
+            echo "Package size: $(du -h ${TEST_ZIP} | cut -f1)"
+            echo "Package contents:"
+            unzip -l "${TEST_ZIP}" | head -20
+          else
+            echo "✗ Module packaging failed"
+            exit 1
+          fi
+
+      - name: Summary
+        run: |
+          echo "================================"
+          echo "Module validation complete!"
+          echo "================================"
+          MODULE_ID=$(grep '^id=' module.prop | cut -d'=' -f2)
+          VERSION=$(grep '^version=' module.prop | cut -d'=' -f2)
+          VERSION_CODE=$(grep '^versionCode=' module.prop | cut -d'=' -f2)
+          NAME=$(grep '^name=' module.prop | cut -d'=' -f2)
+
+          echo "Module ID: $MODULE_ID"
+          echo "Name: $NAME"
+          echo "Version: $VERSION"
+          echo "Version Code: $VERSION_CODE"
