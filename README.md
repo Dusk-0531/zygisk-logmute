@@ -1,5 +1,8 @@
 # 网络优化模块 (Network Optimization Module)
 
+[![CI - Validate Module](https://github.com/Dusk-0531/zygisk-logmute/actions/workflows/ci.yml/badge.svg)](https://github.com/Dusk-0531/zygisk-logmute/actions/workflows/ci.yml)
+[![Build and Release](https://github.com/Dusk-0531/zygisk-logmute/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Dusk-0531/zygisk-logmute/actions/workflows/build-and-release.yml)
+
 ## 简介 (Introduction)
 
 这是一个专为手机流量优化设计的 Magisk 模块，提供基带满血、QoS、管理帧和信道时间片优化功能。完整稳定适配中国三大运营商（移动、联通、电信），全程静默运行。
@@ -18,10 +21,38 @@ This is a Magisk module designed for mobile data optimization, providing full ba
 
 ## 安装说明 (Installation)
 
+### 从 GitHub Releases 下载 (Download from GitHub Releases)
+
+1. 访问 [Releases 页面](https://github.com/Dusk-0531/zygisk-logmute/releases)
+2. 下载最新版本的 `.zip` 文件
+3. 在 Magisk Manager 中刷入下载的模块
+4. 重启设备
+5. 模块会自动检测运营商并应用相应优化
+
+### 手动安装 (Manual Installation)
+
 1. 需要已安装 Magisk v20.4 或更高版本
 2. 在 Magisk Manager 中刷入本模块
 3. 重启设备
 4. 模块会自动检测运营商并应用相应优化
+
+## 发布流程 (Release Process)
+
+本项目使用 GitHub Actions 自动构建和发布：
+
+- **自动构建**: 每次推送代码都会触发 CI 验证，确保模块结构正确
+- **自动发布**: 当创建新的版本标签（如 `v13.3`）时，会自动打包模块并创建 GitHub Release
+- **校验和**: 每个发布版本都包含 SHA256 和 MD5 校验和，确保文件完整性
+
+### 创建新版本 (Create New Release)
+
+1. 更新 `module.prop` 中的 `version` 和 `versionCode`
+2. 创建并推送版本标签:
+   ```bash
+   git tag v13.3
+   git push origin v13.3
+   ```
+3. GitHub Actions 会自动构建并发布到 Releases 页面
 
 ## 配置文件说明 (Configuration Files)
 
